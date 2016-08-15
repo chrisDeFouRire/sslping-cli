@@ -1,0 +1,25 @@
+{
+  "name": "sslping-cli",
+  "version": "1.0.0",
+  "description": "CLI for sslping.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisDeFouRire/sslping-cli.git"
+  },
+  "keywords": [
+    "ssl",
+    "cert",
+    "certificates",
+    "tls"
+  ],
+  "author": "Chris Hartwig",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chrisDeFouRire/sslping-cli/issues"
+  },
+  "homepage": "https://github.com/chrisDeFouRire/sslping-cli#readme"
+}

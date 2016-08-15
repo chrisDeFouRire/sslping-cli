@@ -6,6 +6,8 @@ certificates expire, or if a misconfiguration is detected.
 
 # Usage
 
+_Note: You must use node > 6.0.0_
+
 This CLI allows you to bulk-load servers to sslping.com
 
 Install with `npm install -g sslping-cli`

@@ -5,8 +5,8 @@ const Optimist = require('optimist');
 const async = require('async');
 const fetch = require('node-fetch');
 
-//const SSLPING = 'https://sslping.com';
-const SSLPING = 'http://127.0.0.1:8080';
+const SSLPING = 'https://sslping.com';
+//const SSLPING = 'http://127.0.0.1:8080';
 const QUEUE_LIMIT = 10;
 
 const argv = Optimist

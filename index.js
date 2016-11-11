@@ -1,56 +1,60 @@
 #!/usr/bin/env node
+'use strict';
 
-const status = require('elegant-status');
-const Optimist = require('optimist');
-const async = require('async');
-const fetch = require('node-fetch');
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-const SSLPING = 'https://sslping.com';
+var status = require('elegant-status');
+var Optimist = require('optimist');
+var async = require('async');
+var fetch = require('node-fetch');
+
+var SSLPING = 'https://sslping.com';
 //const SSLPING = 'http://127.0.0.1:8080';
-const QUEUE_LIMIT = 10;
+var QUEUE_LIMIT = 10;
 
-const argv = Optimist
-	.usage("Bulk load servers to https://sslping.com\nUsage: $0 -u [user] -p [password] server[:port]...")
-	.demand(['user', 'password'])
-	.describe('user=email', "address for your sslping.com address")
-	.alias('user', 'u')
-	.describe('password', "password")
-	.alias('password', 'p')
-	.argv
+var argv = Optimist.usage("Bulk load servers to https://sslping.com\nUsage: $0 -u [user] -p [password] server[:port]...").demand(['user', 'password']).describe('user=email', "address for your sslping.com address").alias('user', 'u').describe('password', "password").alias('password', 'p').argv;
 
 // get the rest of the arguments, add port 443 if missing
-const hosts = argv._.map( host => {
-	[hostname, port] = host.split(':');
-	return `${hostname}:${port || 443}`;
+var hosts = argv._.map(function (host) {
+	var _host$split = host.split(':');
+
+	var _host$split2 = _slicedToArray(_host$split, 2);
+
+	hostname = _host$split2[0];
+	port = _host$split2[1];
+
+	return hostname + ':' + (port || 443);
 });
 
 if (hosts.length == 0) {
 	console.error("You must specify a list of servers to import");
 	process.exit(1);
 }
-const {user, password} = argv
+var user = argv.user,
+    password = argv.password;
 
 /** 
  * Get the token for this user/pwd
  * @param {String} email
  * @param {String} password
  * @returns {Promise} promise for the security token (String)
- */ 
+ */
+
 function getTokenFor(email, password) {
-	return fetch(
-		`${SSLPING}/api/v1/login`,
-		{
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ email, password })
-		}
-	).then(res => {
+	return fetch(SSLPING + '/api/v1/login', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ email: email, password: password })
+	}).then(function (res) {
 		if (res.status != 200) {
-			throw new Error('Invalid Password')
+			throw new Error('Invalid Password');
 		}
 		console.info("Connected and authenticated");
-		return res.json()
-	}).then(({token}) => token);
+		return res.json();
+	}).then(function (_ref) {
+		var token = _ref.token;
+		return token;
+	});
 }
 
 /**
@@ -60,23 +64,20 @@ function getTokenFor(email, password) {
  * @param {Callback} callback
  */
 function addSingleCheck(token, host) {
-	const _status = status(`${host}`);
-	return fetch(
-		`${SSLPING}/api/v1/user/checks/${host}`,
-		{
-			method: 'POST',
-			headers: { 
-				'content-type': 'application/json',
-				'securitytoken': token 
-			}
+	var _status = status('' + host);
+	return fetch(SSLPING + '/api/v1/user/checks/' + host, {
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json',
+			'securitytoken': token
 		}
-	).then(res => {
+	}).then(function (res) {
 		if (res.status > 400) {
 			_status(false);
 			console.log(res);
 		}
-		_status(true)
-		return res.json()
+		_status(true);
+		return res.json();
 	});
 }
 
@@ -87,18 +88,21 @@ function addSingleCheck(token, host) {
  * create an async.queue
  * push all the hosts to the queue
  */
-getTokenFor(user, password)
-.then( (token)=> {
+getTokenFor(user, password).then(function (token) {
 
-	const worker = (host, cb) => {
-		addSingleCheck(token, host)
-		.then( result => cb())
+	var worker = function worker(host, cb) {
+		addSingleCheck(token, host).then(function (result) {
+			return cb();
+		});
 	};
-	const queue = async.queue(worker, QUEUE_LIMIT);
-	queue.drain = () => process.exit(0);
-	for (const host in hosts) {
+	var queue = async.queue(worker, QUEUE_LIMIT);
+	queue.drain = function () {
+		return process.exit(0);
+	};
+	for (var host in hosts) {
 		queue.push(hosts[host]);
 	}
+}).catch(function (err) {
+	return console.error(err);
+});
 
-})
-.catch( (err)=> console.error(err));

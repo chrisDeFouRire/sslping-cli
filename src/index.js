@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+global.Promise = global.Promise ? Promise : require('promise-polyfill');
 
 const status = require('elegant-status');
 const Optimist = require('optimist');

@@ -30,7 +30,8 @@
     "async": "*",
     "elegant-status": "*",
     "node-fetch": "^1.6.0",
-    "optimist": "*"
+    "optimist": "*",
+    "promise-polyfill": "^6.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

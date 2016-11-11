@@ -16,12 +16,10 @@ var argv = Optimist.usage("Bulk load servers to https://sslping.com\nUsage: $0 -
 
 // get the rest of the arguments, add port 443 if missing
 var hosts = argv._.map(function (host) {
-	var _host$split = host.split(':');
-
-	var _host$split2 = _slicedToArray(_host$split, 2);
-
-	hostname = _host$split2[0];
-	port = _host$split2[1];
+	var _host$split = host.split(':'),
+	    _host$split2 = _slicedToArray(_host$split, 2),
+	    hostname = _host$split2[0],
+	    port = _host$split2[1];
 
 	return hostname + ':' + (port || 443);
 });

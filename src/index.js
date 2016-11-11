@@ -20,7 +20,7 @@ const argv = Optimist
 
 // get the rest of the arguments, add port 443 if missing
 const hosts = argv._.map( host => {
-	[hostname, port] = host.split(':');
+	const [hostname, port] = host.split(':');
 	return `${hostname}:${port || 443}`;
 });
 

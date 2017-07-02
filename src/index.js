@@ -1,35 +1,23 @@
 #!/usr/bin/env node
 global.Promise = global.Promise ? Promise : require('promise-polyfill');
 
-const status = require('elegant-status');
 const Optimist = require('optimist');
 const async = require('async');
 const fetch = require('node-fetch');
 
 const SSLPING = 'https://sslping.com';
 //const SSLPING = 'http://127.0.0.1:8080';
-const QUEUE_LIMIT = 10;
+const QUEUE_LIMIT = 10; // reasonnable default, 10 servers at a time
 
 const argv = Optimist
-	.usage("Bulk load servers to https://sslping.com\nUsage: $0 -u [user] -p [password] server[:port]...")
+	.usage(`Bulk import and export servers to https://sslping.com
+Usage: $0 -u <user> -p <password> [--quiet=true] import|export server[:port]...`)
 	.demand(['user', 'password'])
-	.describe('user=email', "address for your sslping.com address")
 	.alias('user', 'u')
 	.describe('password', "password")
 	.alias('password', 'p')
+	.describe('quiet', false)
 	.argv
-
-// get the rest of the arguments, add port 443 if missing
-const hosts = argv._.map( host => {
-	const [hostname, port] = host.split(':');
-	return `${hostname}:${port || 443}`;
-});
-
-if (hosts.length == 0) {
-	console.error("You must specify a list of servers to import");
-	process.exit(1);
-}
-const {user, password} = argv
 
 /** 
  * Get the token for this user/pwd
@@ -38,6 +26,10 @@ const {user, password} = argv
  * @returns {Promise} promise for the security token (String)
  */ 
 function getTokenFor(email, password) {
+	if (!argv.quiet) {
+		console.info("Connecting...");
+	}
+
 	return fetch(
 		`${SSLPING}/api/v1/login`,
 		{
@@ -49,9 +41,25 @@ function getTokenFor(email, password) {
 		if (res.status != 200) {
 			throw new Error('Invalid Password')
 		}
-		console.info("Connected and authenticated");
+		if (!argv.quiet) {
+			console.info("Connected and authenticated");
+		}
 		return res.json()
 	}).then(({token}) => token);
+}
+
+/**
+ * Get the hosts we should import from the command line
+ */
+function getImportHosts() {
+	if (argv._.length == 0) {
+		console.error("You must specify a list of servers to import");
+		process.exit(1);
+	}
+	return argv._.map((host) => {
+		const [hostname, port] = host.split(':');
+		return `${hostname}:${port || 443}`;
+	});
 }
 
 /**
@@ -61,7 +69,6 @@ function getTokenFor(email, password) {
  * @param {Callback} callback
  */
 function addSingleCheck(token, host) {
-	const _status = status(`${host}`);
 	return fetch(
 		`${SSLPING}/api/v1/user/checks/${host}`,
 		{
@@ -73,12 +80,33 @@ function addSingleCheck(token, host) {
 		}
 	).then(res => {
 		if (res.status > 400) {
-			_status(false);
-			console.log(res);
+			console.error(`failed \t${host}\t(status=${res.status})`);
+			return null
 		}
-		_status(true)
+		console.info(`done\t${host}`);
 		return res.json()
 	});
+}
+
+/**
+ * Get a JSON report for all hosts
+ * @param {String} token
+ * @return {Promise} the resulting promise
+ */
+function getAllHosts(token) {
+	return fetch(SSLPING + '/api/v1/user/checks', {
+		method: 'GET',
+		headers: {
+			'content-type': 'application/json',
+			'securitytoken': token
+		}
+	}).then((res) => {
+		if (res.status >= 400) {
+			console.error(`failed to get servers (status=${res.status})`)
+			return null
+		}
+		return res.json()
+	})
 }
 
 /**
@@ -88,18 +116,48 @@ function addSingleCheck(token, host) {
  * create an async.queue
  * push all the hosts to the queue
  */
-getTokenFor(user, password)
-.then( (token)=> {
 
-	const worker = (host, cb) => {
-		addSingleCheck(token, host)
-		.then( result => cb())
-	};
-	const queue = async.queue(worker, QUEUE_LIMIT);
-	queue.drain = () => process.exit(0);
-	for (const host in hosts) {
-		queue.push(hosts[host]);
+if (argv._.length < 1) {
+	console.error("You must at least provide a command (import or export)")
+	process.exit(1)
+}
+
+const command = argv._.shift()
+
+const {user, password} = argv
+
+getTokenFor(user, password).then(function (token) {
+	switch (command) {
+		case "import": {
+			const hosts = getImportHosts()
+			if (hosts.length == 0) {
+				console.error("You must specify a list of servers to import");
+				process.exit(1);
+			}
+			var worker = function worker(host, cb) {
+				addSingleCheck(token, host).then(function (result) {
+					return cb()
+				})
+			}
+			var queue = async.queue(worker, QUEUE_LIMIT);
+			queue.drain = function () {
+				return process.exit(0)
+			}
+			for (var host in hosts) {
+				queue.push(hosts[host])
+			}
+			break
+		}
+		case "export": { 
+			var result = getAllHosts(token).then( res => {
+				console.log(JSON.stringify(res, null, 4))
+			})
+
+			break
+		}
 	}
-
 })
-.catch( (err)=> console.error(err));
+.catch((err) => {
+	console.error(err);
+	process.exit(1)
+})

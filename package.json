@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "babel src/index.js >index.js"
+    "prepublish": "babel src/index.js > lib/index.js"
   },
   "repository": {
     "type": "git",
@@ -24,11 +24,10 @@
   },
   "homepage": "https://github.com/chrisDeFouRire/sslping-cli#readme",
   "bin": {
-    "sslping-cli": "./index.js"
+    "sslping-cli": "./lib/index.js"
   },
   "dependencies": {
     "async": "*",
-    "elegant-status": "*",
     "node-fetch": "^1.6.0",
     "optimist": "*",
     "promise-polyfill": "^6.0.2"

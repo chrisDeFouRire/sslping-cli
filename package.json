@@ -1,6 +1,6 @@
 {
   "name": "sslping-cli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "CLI for sslping.com",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,10 @@
   "bin": {
     "sslping-cli": "lib/index.js"
   },
-  "files": ["lib/index.js","npm-shrinkwrap.json"],
+  "files": [
+    "lib/index.js",
+    "npm-shrinkwrap.json"
+  ],
   "dependencies": {
     "async": "*",
     "node-fetch": "^1.6.0",

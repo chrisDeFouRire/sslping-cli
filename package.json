@@ -24,8 +24,9 @@
   },
   "homepage": "https://github.com/chrisDeFouRire/sslping-cli#readme",
   "bin": {
-    "sslping-cli": "./lib/index.js"
+    "sslping-cli": "lib/index.js"
   },
+  "files": ["lib/index.js","npm-shrinkwrap.json"],
   "dependencies": {
     "async": "*",
     "node-fetch": "^1.6.0",

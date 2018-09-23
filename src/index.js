@@ -35,7 +35,7 @@ function getTokenFor(email, password) {
 		{
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ email, password })
+			body: JSON.stringify({ type: 'password', opts: {email, password} })
 		}
 	).then(res => {
 		if (res.status != 200) {

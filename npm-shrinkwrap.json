@@ -1,6 +1,6 @@
 {
   "name": "sslping-cli",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "dependencies": {
     "async": {
       "version": "2.5.0",

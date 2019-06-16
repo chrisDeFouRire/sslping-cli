@@ -34,7 +34,7 @@
     "async": "*",
     "node-fetch": "^1.6.0",
     "optimist": "*",
-    "promise-polyfill": "^6.0.2"
+    "promise-polyfill": "^8.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

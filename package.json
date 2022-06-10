@@ -32,7 +32,7 @@
   ],
   "dependencies": {
     "async": "*",
-    "node-fetch": "^1.6.0",
+    "node-fetch": "^3.2.6",
     "optimist": "*",
     "promise-polyfill": "^6.0.2"
   },
